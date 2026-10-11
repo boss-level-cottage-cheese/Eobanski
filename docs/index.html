@@ -12,23 +12,29 @@ body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-ap
 main{max-width:1100px;margin:0 auto}
 h1{font-size:1.5rem;margin:0 0 4px}
 .meta{color:var(--muted);font-size:.9rem;margin:0 0 16px}
-.bar{display:flex;gap:8px;margin:0 0 8px;position:sticky;top:0;padding:8px 0;background:var(--bg);z-index:2}
-.bar button{font:inherit;font-size:.9rem;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
-.bar button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:600}
-h2{font-size:1.1rem;margin:28px 0 10px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px}
+.tabs button{font:inherit;padding:10px 16px;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);cursor:pointer}
+.tabs button[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.pills{display:flex;gap:8px;margin:0 0 14px}
+.pills button{font:inherit;font-size:.9rem;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
+.pills button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:600}
+h2{font-size:1.05rem;margin:26px 0 8px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
 .card.starred{border-color:var(--star);box-shadow:0 0 0 1px var(--star)}
 .pic{aspect-ratio:4/3;background:var(--line);display:block}
 .pic img{width:100%;height:100%;object-fit:cover;display:block}
 .body{padding:10px 12px 12px}
-.body a{color:var(--accent);text-decoration:none;font-weight:600;word-break:break-word}
-.body a:hover,.body a:focus-visible{text-decoration:underline}
+a{color:var(--accent);text-decoration:none;word-break:break-word}
+a:hover,a:focus-visible{text-decoration:underline}
+.body a{font-weight:600}
 .sub{color:var(--muted);font-size:.85rem;margin-top:4px}
 .badge{color:var(--new);font-weight:700;font-size:.8rem;margin-right:6px}
 .star{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer}
 .star[aria-pressed=true]{background:var(--star);color:#1b2430}
-.empty,.none{color:var(--muted);font-style:italic}
+ul.links{list-style:none;margin:0;padding:0}
+ul.links li{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:0 0 8px;padding:10px 14px}
+.empty{color:var(--muted)}
 .err{color:var(--new);font-size:.85rem}
 details{margin-top:28px}
 summary{cursor:pointer;color:var(--muted)}
@@ -38,18 +44,47 @@ summary{cursor:pointer;color:var(--muted)}
 <body>
 <main>
 <h1>Antwerp studios and antikraak</h1>
-<p class="meta">Budget up to €150. Last checked 11 Oct 2026, 11:28 UTC. Tap the star on the ones you like.</p>
-<div class="bar">
+<p class="meta">Budget up to €150. Last checked 11 Oct 2026, 13:24 UTC.</p>
+<div class="tabs" role="tablist">
+<button role="tab" id="t-list" aria-selected="true">Listings (0)</button>
+<button role="tab" id="t-check" aria-selected="false">Places to check</button>
+</div>
+<section id="p-list">
+<div class="pills">
 <button id="all" aria-pressed="true">All</button>
 <button id="fav" aria-pressed="false">Starred</button>
 </div>
-<h2>Antikraak</h2>
-<div class="grid"><div class="card" data-url="https://www.vastgoedbeheer.com/werkruimte/"><a class="pic" href="https://www.vastgoedbeheer.com/werkruimte/" aria-hidden="true" tabindex="-1"></a><button class="star" type="button" aria-label="Star this listing" aria-pressed="false">&#9733;</button><div class="body"><span class="badge">New</span><a href="https://www.vastgoedbeheer.com/werkruimte/">Werkruimte</a><div class="sub">Interim Vastgoedbeheer (Antwerp), price not shown, first seen 2026-10-11</div></div></div><div class="card" data-url="https://www.vastgoedbeheer.com/hoe-werkt-het-werkruimte/"><a class="pic" href="https://www.vastgoedbeheer.com/hoe-werkt-het-werkruimte/" aria-hidden="true" tabindex="-1"></a><button class="star" type="button" aria-label="Star this listing" aria-pressed="false">&#9733;</button><div class="body"><span class="badge">New</span><a href="https://www.vastgoedbeheer.com/hoe-werkt-het-werkruimte/">Inschrijfprocedure</a><div class="sub">Interim Vastgoedbeheer (Antwerp), price not shown, first seen 2026-10-11</div></div></div><div class="card" data-url="https://www.gapph.nl/"><a class="pic" href="https://www.gapph.nl/"><img src="https://www.vastgoedbeheer.com/04_01_2017/wp-content/uploads/2016/06/logo-gapph-leegstandbeheer-fo.png" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></a><button class="star" type="button" aria-label="Star this listing" aria-pressed="false">&#9733;</button><div class="body"><span class="badge">New</span><a href="https://www.gapph.nl/">Gapph Leegstandbeheer</a><div class="sub">Interim Vastgoedbeheer (Antwerp), price not shown, first seen 2026-10-11</div></div></div><div class="card" data-url="https://www.vastgoedbeheer.com/leegstandbeheer/"><a class="pic" href="https://www.vastgoedbeheer.com/leegstandbeheer/" aria-hidden="true" tabindex="-1"></a><button class="star" type="button" aria-label="Star this listing" aria-pressed="false">&#9733;</button><div class="body"><span class="badge">New</span><a href="https://www.vastgoedbeheer.com/leegstandbeheer/">Leegstandbeheer</a><div class="sub">Interim Vastgoedbeheer (Antwerp), price not shown, first seen 2026-10-11</div></div></div></div>
-<h2>Art studios</h2>
-<p class="empty">Nothing matching your budget right now.</p>
-<h2>Check yourself (groups and boards)</h2>
-<p class="empty">Nothing matching your budget right now.</p>
-<p class="none hide" id="nofav">You haven't starred anything yet.</p>
+<p class="empty">No listings found yet. Use the Places to check tab in the meantime.</p>
+<p class="empty hide" id="nofav">You haven't starred anything yet.</p>
+</section>
+<section id="p-check" class="hide">
+<h2>Facebook groups</h2><ul class="links">
+<li><a href="https://www.facebook.com/search/groups/?q=atelier%20antwerpen">Groups: atelier Antwerpen</a><div class="sub">Search results, so you can join the active ones and turn on notifications</div></li>
+<li><a href="https://www.facebook.com/search/groups/?q=atelier%20te%20huur%20antwerpen">Groups: atelier te huur Antwerpen</a></li>
+<li><a href="https://www.facebook.com/search/groups/?q=antikraak%20antwerpen">Groups: antikraak Antwerpen</a></li>
+<li><a href="https://www.facebook.com/search/groups/?q=artist%20studio%20antwerp">Groups: artist studio Antwerp</a></li>
+<li><a href="https://www.facebook.com/marketplace/search/?query=atelier%20antwerpen">Marketplace: atelier Antwerpen</a></li>
+</ul>
+<h2>Studio organisations</h2><ul class="links">
+<li><a href="https://antwerpart.be/locations/morpho">MORPHO</a><div class="sub">Antwerp arts organisation that rents studios below market value (200+ artists, 14 buildings). Ask about waiting lists or open calls</div></li>
+<li><a href="https://www.google.com/search?q=Studio%20Start%20Antwerpen%20ateliers">Search: Studio Start Antwerpen</a></li>
+<li><a href="https://www.google.com/search?q=Pink%20House%20AIR%20Antwerpen%20ateliers">Search: Pink House AIR Antwerpen ateliers</a></li>
+<li><a href="https://www.google.com/search?q=Kunstwerkt%20ateliers">Search: Kunstwerkt ateliers</a></li>
+<li><a href="https://www.google.com/search?q=betaalbare%20ateliers%20Antwerpen%20kunstenaars">Search: betaalbare ateliers Antwerpen kunstenaars</a></li>
+</ul>
+<h2>Antikraak agencies</h2><ul class="links">
+<li><a href="https://www.vastgoedbeheer.com/">Interim Vastgoedbeheer</a><div class="sub">Has an Antwerp antikraak page; sign up with them directly</div></li>
+<li><a href="https://www.google.com/search?q=Camelot%20antikraak%20Antwerpen">Search: Camelot antikraak Antwerpen</a></li>
+<li><a href="https://www.regiedergebouwen.be/nl/leegstandsbescherming">Regie der Gebouwen: leegstandsbescherming</a><div class="sub">Federal buildings agency, temporary use of empty buildings</div></li>
+<li><a href="https://www.google.com/search?q=antikraak%20Antwerpen%20aanbod">Search: antikraak Antwerpen aanbod</a></li>
+</ul>
+<h2>Property sites and boards</h2><ul class="links">
+<li><a href="https://www.immoweb.be">Immoweb</a><div class="sub">Search Antwerp, commercial or other, and save the search for email alerts</div></li>
+<li><a href="https://www.immovlan.be">Immovlan</a></li>
+<li><a href="https://www.zimmo.be">Zimmo</a></li>
+<li><a href="https://www.2dehands.be">2dehands</a><div class="sub">Search atelier and werkruimte, Antwerpen</div></li>
+</ul>
+</section>
 </main>
 <script>
 (function(){
@@ -81,6 +116,17 @@ summary{cursor:pointer;color:var(--muted)}
   });
   document.getElementById("all").onclick=function(){onlyFav=false;paint()};
   document.getElementById("fav").onclick=function(){onlyFav=true;paint()};
+  function tab(name){
+    var list=name!=="check";
+    document.getElementById("p-list").classList.toggle("hide",!list);
+    document.getElementById("p-check").classList.toggle("hide",list);
+    document.getElementById("t-list").setAttribute("aria-selected",list);
+    document.getElementById("t-check").setAttribute("aria-selected",!list);
+    try{history.replaceState(null,"",list?"#listings":"#check")}catch(e){}
+  }
+  document.getElementById("t-list").onclick=function(){tab("listings")};
+  document.getElementById("t-check").onclick=function(){tab("check")};
+  tab(location.hash==="#check"?"check":"listings");
   paint();
 })();
 </script>
