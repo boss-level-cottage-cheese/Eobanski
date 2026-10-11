@@ -1,0 +1,31 @@
+name: studio-watcher
+
+on:
+  schedule:
+    - cron: "30 6 * * *"   # once a day, around 08:00 Antwerp time
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run watcher
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: python watcher.py
+      - name: Save results
+        run: |
+          git config user.name "studio-watcher"
+          git config user.email "actions@users.noreply.github.com"
+          git add state.json docs/index.html
+          if ! git diff --staged --quiet; then
+            git commit -m "Update listings"
+            git push
+          fi
