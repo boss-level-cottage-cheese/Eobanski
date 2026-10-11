@@ -1,0 +1,19 @@
+{
+  "budget": 150,
+  "dashboard_url": "https://YOUR-GITHUB-USERNAME.github.io/YOUR-REPO-NAME/",
+  "ntfy_topic": "",
+  "new_days": 3,
+  "keywords": [
+    "atelier", "werkruimte", "werkplaats", "studio", "antikraak", "anti-kraak",
+    "tijdelijk", "bruikleen", "leegstand", "kantoor", "kunstenaar"
+  ],
+  "sources": [
+    {
+      "name": "Interim Vastgoedbeheer (Antwerp)",
+      "category": "antikraak",
+      "url": "https://www.vastgoedbeheer.com/antikraak-wonen-antwerpen/",
+      "require_keywords": true
+    }
+  ],
+  "manual_links": []
+}
