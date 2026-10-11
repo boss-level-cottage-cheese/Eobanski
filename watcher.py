@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
 """Watches listing pages for antikraak / studio spaces, filters by budget,
-sends a phone push via ntfy.sh and writes a one-page dashboard to docs/index.html.
-
+sends one daily phone alert via ntfy.sh (only when something is new) and writes a picture dashboard to docs/index.html.
+ 
 Usage:
-  python watcher.py            normal run (alerts for new listings)
-  python watcher.py --digest   normal run + a summary push of everything available
+  python watcher.py     one run: update the list, alert only if something new appeared
 """
 import datetime as dt
 import html
@@ -15,22 +14,22 @@ import sys
 import urllib.parse
 import urllib.request
 from html.parser import HTMLParser
-
+ 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 CONFIG = os.path.join(ROOT, "config.json")
 STATE = os.path.join(ROOT, "state.json")
 DASH = os.path.join(ROOT, "docs", "index.html")
 UA = "Mozilla/5.0 (compatible; studio-watcher/1.0)"
-
+ 
 CATEGORY_LABELS = {
     "antikraak": "Antikraak",
     "studio": "Art studios",
     "social": "Check yourself (groups and boards)",
 }
-
-
+ 
+ 
 # ---------- fetching and parsing ----------
-
+ 
 class LinkParser(HTMLParser):
     def __init__(self, base):
         super().__init__()
@@ -38,32 +37,54 @@ class LinkParser(HTMLParser):
         self.links = []
         self._href = None
         self._text = []
-
+        self._img = None
+ 
     def handle_starttag(self, tag, attrs):
+        a = dict(attrs)
         if tag == "a":
-            self._href = dict(attrs).get("href")
+            self._href = a.get("href")
             self._text = []
-
+            self._img = None
+        elif tag == "img" and self._href is not None:
+            if a.get("alt"):
+                self._text.append(a["alt"])
+            src = a.get("data-src") or a.get("src")
+            if not src and a.get("srcset"):
+                src = a["srcset"].split(",")[0].split(" ")[0]
+            if src and not src.startswith("data:") and not self._img:
+                self._img = urllib.parse.urljoin(self.base, src)
+ 
     def handle_data(self, data):
         if self._href is not None:
             self._text.append(data)
-
+ 
     def handle_endtag(self, tag):
         if tag == "a" and self._href is not None:
-            text = " ".join("".join(self._text).split())
+            text = " ".join(" ".join(self._text).split())
             url = urllib.parse.urljoin(self.base, self._href).split("#")[0]
             if url.startswith("http") and text:
-                self.links.append((url, text))
+                self.links.append((url, text, self._img))
             self._href = None
-
-
+ 
+ 
+def og_image(url):
+    """Fallback: the preview picture a listing page declares for itself."""
+    try:
+        page = fetch(url)
+    except Exception:
+        return None
+    m = (re.search(r'<meta[^>]+property=["\']og:image["\'][^>]*content=["\']([^"\']+)', page, re.I)
+         or re.search(r'<meta[^>]+content=["\']([^"\']+)["\'][^>]+property=["\']og:image', page, re.I))
+    return urllib.parse.urljoin(url, html.unescape(m.group(1))) if m else None
+ 
+ 
 def fetch(url):
     req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Language": "nl,en;q=0.8"})
     with urllib.request.urlopen(req, timeout=30) as resp:
         charset = resp.headers.get_content_charset() or "utf-8"
         return resp.read().decode(charset, errors="replace")
-
-
+ 
+ 
 def to_number(s):
     s = s.strip().rstrip(".,-")
     if re.fullmatch(r"\d{1,3}(\.\d{3})+(,\d+)?", s):
@@ -74,14 +95,14 @@ def to_number(s):
         return float(s)
     except ValueError:
         return None
-
-
+ 
+ 
 def prices(text):
     found = re.findall(r"€\s?(\d[\d.,]*)", text) + re.findall(r"(\d[\d.,]*)\s?(?:€|euro\b|eur\b)", text, re.I)
     nums = [to_number(f) for f in found]
     return [n for n in nums if n is not None]
-
-
+ 
+ 
 def keep(src, cfg, url, text):
     """Return (keep, price_or_None)."""
     pattern = src.get("include_pattern")
@@ -95,28 +116,28 @@ def keep(src, cfg, url, text):
     if p and min(p) > cfg["budget"]:
         return False, None
     return True, (min(p) if p else None)
-
-
+ 
+ 
 # ---------- state ----------
-
+ 
 def load_state():
     if os.path.exists(STATE):
         with open(STATE, encoding="utf-8") as f:
             return json.load(f)
     return {"sources": {}, "listings": {}}
-
-
+ 
+ 
 def save_state(state):
     with open(STATE, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=1, ensure_ascii=False)
-
-
+ 
+ 
 def now():
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec="minutes")
-
-
+ 
+ 
 # ---------- notifications ----------
-
+ 
 def push(cfg, title, message, click=None):
     topic = os.environ.get("NTFY_TOPIC") or cfg.get("ntfy_topic")
     if not topic:
@@ -135,10 +156,10 @@ def push(cfg, title, message, click=None):
         urllib.request.urlopen(req, timeout=20).read()
     except Exception as e:  # a failed push must not break the run
         print("Push failed:", e)
-
-
+ 
+ 
 # ---------- dashboard ----------
-
+ 
 PAGE = """<!doctype html>
 <html lang="en">
 <head>
@@ -146,77 +167,144 @@ PAGE = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Antwerp studios and antikraak</title>
 <style>
-:root{--bg:#f7f8fa;--ink:#1b2430;--muted:#5d6b7a;--line:#d9dee5;--accent:#1f5fbf;--new:#c2410c;--card:#fff}
-@media (prefers-color-scheme:dark){:root{--bg:#12161c;--ink:#e6eaf0;--muted:#93a0af;--line:#2a323d;--accent:#7fb0ff;--new:#fb923c;--card:#1a2029}}
+:root{--bg:#f6f7f9;--ink:#1b2430;--muted:#5d6b7a;--line:#d9dee5;--accent:#1f5fbf;--new:#c2410c;--star:#d99a00;--card:#fff}
+@media (prefers-color-scheme:dark){:root{--bg:#12161c;--ink:#e6eaf0;--muted:#93a0af;--line:#2a323d;--accent:#7fb0ff;--new:#fb923c;--star:#f5c542;--card:#1a2029}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;padding:max(20px,env(safe-area-inset-top)) 16px 40px}
-main{max-width:720px;margin:0 auto}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:max(20px,env(safe-area-inset-top)) 16px 48px}
+main{max-width:1100px;margin:0 auto}
 h1{font-size:1.5rem;margin:0 0 4px}
-.meta{color:var(--muted);font-size:.9rem;margin:0 0 28px}
-h2{font-size:1.1rem;margin:32px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--line)}
-ul{list-style:none;margin:0;padding:0}
-li{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:0 0 8px;padding:12px 14px}
-a{color:var(--accent);text-decoration:none;word-break:break-word}
-a:hover,a:focus-visible{text-decoration:underline}
-.sub{color:var(--muted);font-size:.85rem;margin-top:2px}
-.badge{color:var(--new);font-weight:600;font-size:.8rem;margin-right:6px}
-.empty{color:var(--muted);font-style:italic}
+.meta{color:var(--muted);font-size:.9rem;margin:0 0 16px}
+.bar{display:flex;gap:8px;margin:0 0 8px;position:sticky;top:0;padding:8px 0;background:var(--bg);z-index:2}
+.bar button{font:inherit;font-size:.9rem;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
+.bar button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:600}
+h2{font-size:1.1rem;margin:28px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.card.starred{border-color:var(--star);box-shadow:0 0 0 1px var(--star)}
+.pic{aspect-ratio:4/3;background:var(--line);display:block}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.body{padding:10px 12px 12px}
+.body a{color:var(--accent);text-decoration:none;font-weight:600;word-break:break-word}
+.body a:hover,.body a:focus-visible{text-decoration:underline}
+.sub{color:var(--muted);font-size:.85rem;margin-top:4px}
+.badge{color:var(--new);font-weight:700;font-size:.8rem;margin-right:6px}
+.star{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer}
+.star[aria-pressed=true]{background:var(--star);color:#1b2430}
+.empty,.none{color:var(--muted);font-style:italic}
 .err{color:var(--new);font-size:.85rem}
+details{margin-top:28px}
+summary{cursor:pointer;color:var(--muted)}
+.hide{display:none}
 </style>
 </head>
 <body>
 <main>
 <h1>Antwerp studios and antikraak</h1>
-<p class="meta">Budget up to €__BUDGET__. Last checked __UPDATED__.</p>
+<p class="meta">Budget up to €__BUDGET__. Last checked __UPDATED__. Tap the star on the ones you like.</p>
+<div class="bar">
+<button id="all" aria-pressed="true">All</button>
+<button id="fav" aria-pressed="false">Starred</button>
+</div>
 __BODY__
+<p class="none hide" id="nofav">You haven't starred anything yet.</p>
 </main>
+<script>
+(function(){
+  var KEY="studio-stars", stars=[];
+  try{stars=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(stars))}catch(e){}}
+  var cards=[].slice.call(document.querySelectorAll(".card"));
+  var onlyFav=false;
+  function paint(){
+    var shown=0;
+    cards.forEach(function(c){
+      var on=stars.indexOf(c.dataset.url)>-1;
+      c.classList.toggle("starred",on);
+      c.querySelector(".star").setAttribute("aria-pressed",on);
+      var hide=onlyFav&&!on;
+      c.classList.toggle("hide",hide);
+      if(!hide)shown++;
+    });
+    document.getElementById("nofav").classList.toggle("hide",!(onlyFav&&shown===0));
+    document.getElementById("all").setAttribute("aria-pressed",!onlyFav);
+    document.getElementById("fav").setAttribute("aria-pressed",onlyFav);
+  }
+  cards.forEach(function(c){
+    c.querySelector(".star").addEventListener("click",function(){
+      var i=stars.indexOf(c.dataset.url);
+      if(i>-1)stars.splice(i,1);else stars.push(c.dataset.url);
+      save();paint();
+    });
+  });
+  document.getElementById("all").onclick=function(){onlyFav=false;paint()};
+  document.getElementById("fav").onclick=function(){onlyFav=true;paint()};
+  paint();
+})();
+</script>
 </body>
 </html>
 """
-
-
+ 
+ 
+def card(url, item, is_new):
+    price = ("€%d" % item["price"]) if item.get("price") is not None else "price not shown"
+    if item.get("image"):
+        pic = ('<a class="pic" href="%s"><img src="%s" alt="" loading="lazy" referrerpolicy="no-referrer" '
+               'onerror="this.remove()"></a>' % (html.escape(url, quote=True), html.escape(item["image"], quote=True)))
+    else:
+        pic = '<a class="pic" href="%s" aria-hidden="true" tabindex="-1"></a>' % html.escape(url, quote=True)
+    return (
+        '<div class="card" data-url="%s">%s'
+        '<button class="star" type="button" aria-label="Star this listing" aria-pressed="false">&#9733;</button>'
+        '<div class="body">%s<a href="%s">%s</a><div class="sub">%s, %s, first seen %s</div></div></div>'
+        % (
+            html.escape(url, quote=True), pic,
+            '<span class="badge">New</span>' if is_new else "",
+            html.escape(url, quote=True), html.escape(item["title"]),
+            html.escape(item["source"]), price, item["first_seen"][:10],
+        )
+    )
+ 
+ 
 def render(cfg, state):
     cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=cfg.get("new_days", 3))
+    gone_cutoff = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=30)
     by_cat = {c: [] for c in CATEGORY_LABELS}
+    gone = []
     for url, item in state["listings"].items():
         if item.get("active"):
             by_cat.setdefault(item["category"], []).append((url, item))
-
+        elif dt.datetime.fromisoformat(item.get("last_seen", item["first_seen"])) > gone_cutoff:
+            gone.append((url, item))
+ 
     parts = []
     for cat, label in CATEGORY_LABELS.items():
         parts.append("<h2>%s</h2>" % html.escape(label))
-        count = 0
+        cards = []
         for url, item in sorted(by_cat.get(cat, []), key=lambda x: x[1]["first_seen"], reverse=True):
-            count += 1
-            is_new = dt.datetime.fromisoformat(item["first_seen"]) > cutoff
-            price = ("€%d" % item["price"]) if item.get("price") is not None else "price not shown"
-            parts.append(
-                '<li>%s<a href="%s">%s</a><div class="sub">%s, %s, first seen %s</div></li>'
-                % (
-                    '<span class="badge">New</span>' if is_new else "",
-                    html.escape(url, quote=True),
-                    html.escape(item["title"]),
-                    html.escape(item["source"]),
-                    price,
-                    item["first_seen"][:10],
-                )
-            )
-        for link in cfg.get("manual_links", []):
-            if link.get("category", "social") == cat:
-                count += 1
-                parts.append(
-                    '<li><a href="%s">%s</a><div class="sub">Open and check by hand</div></li>'
-                    % (html.escape(link["url"], quote=True), html.escape(link["name"]))
-                )
-        if count == 0:
+            cards.append(card(url, item, dt.datetime.fromisoformat(item["first_seen"]) > cutoff))
+        links = [
+            '<div class="card"><div class="body"><a href="%s">%s</a><div class="sub">Open and check by hand</div></div></div>'
+            % (html.escape(l["url"], quote=True), html.escape(l["name"]))
+            for l in cfg.get("manual_links", []) if l.get("category", "social") == cat
+        ]
+        if cards or links:
+            parts.append('<div class="grid">%s</div>' % "".join(cards + links))
+        else:
             parts.append('<p class="empty">Nothing matching your budget right now.</p>')
-
+ 
+    if gone:
+        parts.append("<details><summary>No longer listed (last 30 days)</summary><div class=\"grid\" style=\"margin-top:12px\">")
+        for url, item in sorted(gone, key=lambda x: x[1].get("last_seen", ""), reverse=True):
+            parts.append(card(url, item, False))
+        parts.append("</div></details>")
+ 
     errors = [(n, e) for n, e in state.get("errors", {}).items() if e]
     if errors:
         parts.append("<h2>Sources that failed on the last run</h2>")
         for n, e in errors:
             parts.append('<p class="err">%s: %s</p>' % (html.escape(n), html.escape(e)))
-
+ 
     page = (
         PAGE.replace("__BUDGET__", str(cfg["budget"]))
         .replace("__UPDATED__", dt.datetime.now(dt.timezone.utc).strftime("%d %b %Y, %H:%M UTC"))
@@ -225,17 +313,18 @@ def render(cfg, state):
     os.makedirs(os.path.dirname(DASH), exist_ok=True)
     with open(DASH, "w", encoding="utf-8") as f:
         f.write(page)
-
-
+ 
+ 
 # ---------- main ----------
-
-def run(digest=False):
+ 
+def run():
     with open(CONFIG, encoding="utf-8") as f:
         cfg = json.load(f)
     state = load_state()
     state.setdefault("errors", {})
     new_items = []
-
+    og_budget = 20  # max extra page fetches for pictures per run
+ 
     for src in cfg["sources"]:
         name = src["name"]
         try:
@@ -245,49 +334,55 @@ def run(digest=False):
             print("Failed:", name, e)
             continue
         state["errors"][name] = ""
-
+ 
         parser = LinkParser(src["url"])
         parser.feed(page)
         matched = {}
-        for url, text in parser.links:
+        for url, text, img in parser.links:
             ok, price = keep(src, cfg, url, text)
-            if ok:
-                matched[url] = (text, price)
-
+            if not ok:
+                continue
+            if url in matched:  # same listing linked twice (picture and title)
+                old_text, old_price, old_img = matched[url]
+                text = text if len(text) > len(old_text) else old_text
+                img = img or old_img
+                price = price if price is not None else old_price
+            matched[url] = (text, price, img)
+ 
         baseline = not state["sources"].get(name, {}).get("initialized")
         for url, item in state["listings"].items():
             if item["source"] == name and url not in matched:
                 item["active"] = False
-        for url, (text, price) in matched.items():
-            if url not in state["listings"]:
-                state["listings"][url] = {
+        for url, (text, price, img) in matched.items():
+            existing = state["listings"].get(url)
+            if existing is None:
+                existing = state["listings"][url] = {
                     "title": text[:140], "source": name, "category": src.get("category", "studio"),
-                    "first_seen": now(), "price": price, "active": True,
+                    "first_seen": now(), "price": price, "image": img, "active": True,
                 }
                 if not baseline:
-                    new_items.append(state["listings"][url] | {"url": url})
-            else:
-                state["listings"][url].update(active=True, price=price)
+                    new_items.append(existing)
+            existing.update(active=True, price=price, last_seen=now())
+            if img and not existing.get("image"):
+                existing["image"] = img
+            if not existing.get("image") and og_budget > 0:
+                og_budget -= 1
+                existing["image"] = og_image(url)
         state["sources"][name] = {"initialized": True, "last_ok": now()}
-
+ 
     save_state(state)
     render(cfg, state)
-
-    dash = cfg.get("dashboard_url") or None
-    if len(new_items) > 5:
-        push(cfg, "%d new listings" % len(new_items), "Open the dashboard to see them.", dash)
-    else:
-        for it in new_items:
-            price = ("€%d" % it["price"]) if it["price"] is not None else "price not shown"
-            push(cfg, "New: " + it["category"], "%s (%s)\n%s" % (it["title"], price, it["source"]), it["url"])
-
-    if digest:
-        active = [(u, i) for u, i in state["listings"].items() if i.get("active")]
-        top = "\n".join("- " + i["title"][:60] for _, i in active[:5]) or "Nothing matching right now."
-        push(cfg, "Weekly: %d available" % len(active), top, dash)
-
+ 
+    # One alert per run, and none when nothing is new.
+    if new_items:
+        lines = "\n".join("- " + i["title"][:70] for i in new_items[:5])
+        more = "\n+ %d more" % (len(new_items) - 5) if len(new_items) > 5 else ""
+        push(cfg, "%d new listing%s" % (len(new_items), "" if len(new_items) == 1 else "s"),
+             lines + more, cfg.get("dashboard_url") or None)
+ 
     print("Done. %d new, %d active." % (len(new_items), sum(1 for i in state["listings"].values() if i.get("active"))))
-
-
+ 
+ 
 if __name__ == "__main__":
-    run(digest="--digest" in sys.argv)
+    run()
+ 
