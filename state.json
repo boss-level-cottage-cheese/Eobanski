@@ -1,0 +1,53 @@
+{
+ "sources": {
+  "Interim Vastgoedbeheer (Antwerp)": {
+   "initialized": true,
+   "last_ok": "2026-10-11T11:28+00:00"
+  }
+ },
+ "listings": {
+  "https://www.vastgoedbeheer.com/leegstandbeheer/": {
+   "title": "Leegstandbeheer",
+   "source": "Interim Vastgoedbeheer (Antwerp)",
+   "category": "antikraak",
+   "first_seen": "2026-10-11T11:27+00:00",
+   "price": null,
+   "image": null,
+   "active": true,
+   "last_seen": "2026-10-11T11:27+00:00"
+  },
+  "https://www.vastgoedbeheer.com/werkruimte/": {
+   "title": "Werkruimte",
+   "source": "Interim Vastgoedbeheer (Antwerp)",
+   "category": "antikraak",
+   "first_seen": "2026-10-11T11:28+00:00",
+   "price": null,
+   "image": null,
+   "active": true,
+   "last_seen": "2026-10-11T11:28+00:00"
+  },
+  "https://www.vastgoedbeheer.com/hoe-werkt-het-werkruimte/": {
+   "title": "Inschrijfprocedure",
+   "source": "Interim Vastgoedbeheer (Antwerp)",
+   "category": "antikraak",
+   "first_seen": "2026-10-11T11:28+00:00",
+   "price": null,
+   "image": null,
+   "active": true,
+   "last_seen": "2026-10-11T11:28+00:00"
+  },
+  "https://www.gapph.nl/": {
+   "title": "Gapph Leegstandbeheer",
+   "source": "Interim Vastgoedbeheer (Antwerp)",
+   "category": "antikraak",
+   "first_seen": "2026-10-11T11:28+00:00",
+   "price": null,
+   "image": "https://www.vastgoedbeheer.com/04_01_2017/wp-content/uploads/2016/06/logo-gapph-leegstandbeheer-fo.png",
+   "active": true,
+   "last_seen": "2026-10-11T11:28+00:00"
+  }
+ },
+ "errors": {
+  "Interim Vastgoedbeheer (Antwerp)": ""
+ }
+}
