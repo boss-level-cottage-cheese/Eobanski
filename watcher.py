@@ -188,47 +188,53 @@ PAGE = """<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Antwerp studios and antikraak</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=MedievalSharp&display=swap" rel="stylesheet">
+<title>The Antwerp Atelier Ledger</title>
 <style>
-:root{--bg:#f6f7f9;--ink:#1b2430;--muted:#5d6b7a;--line:#d9dee5;--accent:#1f5fbf;--new:#c2410c;--star:#d99a00;--card:#fff}
-@media (prefers-color-scheme:dark){:root{--bg:#12161c;--ink:#e6eaf0;--muted:#93a0af;--line:#2a323d;--accent:#7fb0ff;--new:#fb923c;--star:#f5c542;--card:#1a2029}}
+:root{--bg:#e8dcc0;--ink:#2b1d12;--muted:#6b5538;--line:#8b6b43;--ring:#5a3e24;--accent:#7a1f1f;--new:#9c2a12;--star:#b8860b;--card:#f4ead2;--onaccent:#f4ead2}
+@media (prefers-color-scheme:dark){:root{--bg:#17110c;--ink:#eadbb8;--muted:#b49f78;--line:#6d5233;--ring:#8d6d43;--accent:#e0a458;--new:#f08a5d;--star:#e6b422;--card:#251b13;--onaccent:#17110c}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif;padding:max(20px,env(safe-area-inset-top)) 16px 48px}
+body{margin:0;color:var(--ink);background-color:var(--bg);
+ background-image:radial-gradient(ellipse at top,rgba(255,255,255,.22),transparent 60%),radial-gradient(ellipse at bottom,rgba(90,60,20,.18),transparent 65%);
+ background-attachment:fixed;font:18px/1.45 "IM Fell English",Georgia,"Times New Roman",serif;padding:max(20px,env(safe-area-inset-top)) 16px 56px}
 main{max-width:1100px;margin:0 auto}
-h1{font-size:1.5rem;margin:0 0 4px}
-.meta{color:var(--muted);font-size:.9rem;margin:0 0 16px}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin:0 0 16px}
-.tabs button{font:inherit;padding:10px 16px;border:0;border-bottom:3px solid transparent;background:none;color:var(--muted);cursor:pointer}
-.tabs button[aria-selected=true]{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+h1,h2,.tabs button,.pills button,.badge{font-family:"MedievalSharp","IM Fell English",Georgia,serif;font-weight:400}
+h1{font-size:2.1rem;margin:8px 0 4px;text-align:center;color:var(--accent);line-height:1.15}
+.meta{color:var(--muted);font-style:italic;text-align:center;margin:0 0 18px}
+.meta::after{content:"\2766";display:block;font-size:1.5rem;color:var(--line);font-style:normal;margin-top:4px}
+.tabs{display:flex;gap:8px;justify-content:center;margin:0 0 18px;flex-wrap:wrap}
+.tabs button{font-size:1.05rem;padding:8px 20px;border:2px solid var(--ring);border-radius:4px 4px 0 0;background:var(--card);color:var(--ink);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--accent);color:var(--onaccent)}
 .pills{display:flex;gap:8px;margin:0 0 14px}
-.pills button{font:inherit;font-size:.9rem;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
-.pills button[aria-pressed=true]{border-color:var(--accent);color:var(--accent);font-weight:600}
-h2{font-size:1.05rem;margin:26px 0 8px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
-.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
-.card.starred{border-color:var(--star);box-shadow:0 0 0 1px var(--star)}
-.pic{aspect-ratio:4/3;background:var(--line);display:block}
+.pills button{font-size:.95rem;padding:4px 14px;border:2px solid var(--ring);border-radius:999px;background:var(--card);color:var(--ink);cursor:pointer}
+.pills button[aria-pressed=true]{background:var(--ink);color:var(--card)}
+h2{font-size:1.25rem;margin:28px 0 10px;padding-bottom:4px;border-bottom:3px double var(--line);color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.card{position:relative;background:var(--card);border:2px solid var(--ring);border-radius:3px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 3px 0 rgba(43,29,18,.28)}
+.card.starred{border-color:var(--star);box-shadow:0 0 0 2px var(--star),0 3px 0 rgba(43,29,18,.28)}
+.pic{aspect-ratio:4/3;background:var(--line);display:block;border-bottom:3px double var(--ring)}
 .pic img{width:100%;height:100%;object-fit:cover;display:block}
 .body{padding:10px 12px 12px}
 a{color:var(--accent);text-decoration:none;word-break:break-word}
 a:hover,a:focus-visible{text-decoration:underline}
-.body a{font-weight:600}
-.sub{color:var(--muted);font-size:.85rem;margin-top:4px}
-.badge{color:var(--new);font-weight:700;font-size:.8rem;margin-right:6px}
-.star{position:absolute;top:8px;right:8px;width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer}
-.star[aria-pressed=true]{background:var(--star);color:#1b2430}
+.sub{color:var(--muted);font-size:.9rem;margin-top:4px}
+.badge{color:var(--new);font-size:.85rem;margin-right:6px}
+.star{position:absolute;top:8px;right:8px;width:40px;height:40px;border-radius:50%;border:2px solid var(--ring);background:rgba(43,29,18,.7);color:#f4ead2;font-size:1.3rem;line-height:1;cursor:pointer}
+.star[aria-pressed=true]{background:var(--star);color:#2b1d12}
 ul.links{list-style:none;margin:0;padding:0}
-ul.links li{background:var(--card);border:1px solid var(--line);border-radius:6px;margin:0 0 8px;padding:10px 14px}
-.empty{color:var(--muted)}
-.err{color:var(--new);font-size:.85rem}
+ul.links li{background:var(--card);border:2px solid var(--ring);border-radius:3px;margin:0 0 10px;padding:10px 14px}
+.empty{color:var(--muted);font-style:italic}
+.err{color:var(--new);font-size:.9rem}
 details{margin-top:28px}
-summary{cursor:pointer;color:var(--muted)}
+summary{cursor:pointer;color:var(--muted);font-style:italic}
 .hide{display:none}
 </style>
 </head>
 <body>
 <main>
-<h1>Antwerp studios and antikraak</h1>
+<h1>The Antwerp Atelier Ledger</h1>
 <p class="meta">Budget up to €__BUDGET__. Last checked __UPDATED__.</p>
 <div class="tabs" role="tablist">
 <button role="tab" id="t-list" aria-selected="true">Listings (__COUNT__)</button>
