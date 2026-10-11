@@ -13,15 +13,108 @@
     "tijdelijk",
     "bruikleen",
     "leegstand",
-    "kantoor",
     "kunstenaar"
   ],
-  "sources": [
+  "sources": [],
+  "manual_links": [
     {
-      "name": "Interim Vastgoedbeheer (Antwerp)",
-      "category": "antikraak",
-      "url": "https://www.vastgoedbeheer.com/antikraak-wonen-antwerpen/",
-      "require_keywords": true
+      "group": "Facebook groups",
+      "name": "Groups: atelier Antwerpen",
+      "url": "https://www.facebook.com/search/groups/?q=atelier%20antwerpen",
+      "note": "Search results, so you can join the active ones and turn on notifications"
+    },
+    {
+      "group": "Facebook groups",
+      "name": "Groups: atelier te huur Antwerpen",
+      "url": "https://www.facebook.com/search/groups/?q=atelier%20te%20huur%20antwerpen"
+    },
+    {
+      "group": "Facebook groups",
+      "name": "Groups: antikraak Antwerpen",
+      "url": "https://www.facebook.com/search/groups/?q=antikraak%20antwerpen"
+    },
+    {
+      "group": "Facebook groups",
+      "name": "Groups: artist studio Antwerp",
+      "url": "https://www.facebook.com/search/groups/?q=artist%20studio%20antwerp"
+    },
+    {
+      "group": "Facebook groups",
+      "name": "Marketplace: atelier Antwerpen",
+      "url": "https://www.facebook.com/marketplace/search/?query=atelier%20antwerpen"
+    },
+    {
+      "group": "Studio organisations",
+      "name": "MORPHO",
+      "url": "https://antwerpart.be/locations/morpho",
+      "note": "Antwerp arts organisation that rents studios below market value (200+ artists, 14 buildings). Ask about waiting lists or open calls"
+    },
+    {
+      "group": "Studio organisations",
+      "name": "Search: Studio Start Antwerpen",
+      "url": "https://www.google.com/search?q=Studio%20Start%20Antwerpen%20ateliers"
+    },
+    {
+      "group": "Studio organisations",
+      "name": "Search: Pink House AIR Antwerpen ateliers",
+      "url": "https://www.google.com/search?q=Pink%20House%20AIR%20Antwerpen%20ateliers"
+    },
+    {
+      "group": "Studio organisations",
+      "name": "Search: Kunstwerkt ateliers",
+      "url": "https://www.google.com/search?q=Kunstwerkt%20ateliers"
+    },
+    {
+      "group": "Studio organisations",
+      "name": "Search: betaalbare ateliers Antwerpen kunstenaars",
+      "url": "https://www.google.com/search?q=betaalbare%20ateliers%20Antwerpen%20kunstenaars"
+    },
+    {
+      "group": "Antikraak agencies",
+      "name": "Interim Vastgoedbeheer",
+      "url": "https://www.vastgoedbeheer.com/",
+      "note": "Has an Antwerp antikraak page; sign up with them directly"
+    },
+    {
+      "group": "Antikraak agencies",
+      "name": "Search: Camelot antikraak Antwerpen",
+      "url": "https://www.google.com/search?q=Camelot%20antikraak%20Antwerpen"
+    },
+    {
+      "group": "Antikraak agencies",
+      "name": "Regie der Gebouwen: leegstandsbescherming",
+      "url": "https://www.regiedergebouwen.be/nl/leegstandsbescherming",
+      "note": "Federal buildings agency, temporary use of empty buildings"
+    },
+    {
+      "group": "Antikraak agencies",
+      "name": "Search: antikraak Antwerpen aanbod",
+      "url": "https://www.google.com/search?q=antikraak%20Antwerpen%20aanbod"
+    },
+    {
+      "group": "Property sites and boards",
+      "name": "Immoweb",
+      "url": "https://www.immoweb.be",
+      "note": "Search Antwerp, commercial or other, and save the search for email alerts"
+    },
+    {
+      "group": "Property sites and boards",
+      "name": "Immovlan",
+      "url": "https://www.immovlan.be"
+    },
+    {
+      "group": "Property sites and boards",
+      "name": "Zimmo",
+      "url": "https://www.zimmo.be"
+    },
+    {
+      "group": "Property sites and boards",
+      "name": "2dehands",
+      "url": "https://www.2dehands.be",
+      "note": "Search atelier and werkruimte, Antwerpen"
+    }
+  ]
+}
     }
   ],
   "manual_links": []
